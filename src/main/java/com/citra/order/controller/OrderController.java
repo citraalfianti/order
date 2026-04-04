@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.citra.order.entity.Order;
 import com.citra.order.service.OrderService;
+import com.citra.order.vo.ResponseTemplate;
+import com.citra.order.vo.Product;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -39,5 +41,10 @@ public class OrderController {
     public String delete(@PathVariable Long id) {
         service.delete(id);
         return "Order deleted";
+    }
+
+    @GetMapping("/products/{id}")
+    public List<ResponseTemplate> getOrderWithProdukById(@PathVariable Long id) {
+        return service.getOrderWithProdukById(id);
     }
 }

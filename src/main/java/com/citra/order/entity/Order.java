@@ -13,6 +13,7 @@ public class Order {
     private Long id;
 
     private String customerName;
+    private Long productId;
     private String productName;
     private Integer quantity;
     private Double price;
