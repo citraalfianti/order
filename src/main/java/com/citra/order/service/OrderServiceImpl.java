@@ -13,6 +13,7 @@ import com.citra.order.vo.Product;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -25,10 +26,21 @@ public class OrderServiceImpl implements OrderService {
         this.discoveryClient = discoveryClient;
         this.restTemplate = restTemplate;
     }
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public Order create(Order order) {
-        return repository.save(order);
+        System.out.println("Masuk service create: " + order);
+        Order savedOrder = repository.save(order);
+        System.out.println("Order tersimpan: " + savedOrder);
+        // kirim DTO ke RabbitMQ
+        rabbitTemplate.convertAndSend("order-queue", savedOrder);
+
+        System.out.println("Message dikirim ke RabbitMQ (DTO)");
+
+        return savedOrder;
+        
     }
 
     @Override
