@@ -11,9 +11,13 @@ import com.citra.order.repository.OrderRepository;
 import com.citra.order.vo.ResponseTemplate;
 import com.citra.order.vo.Product;
 import java.util.ArrayList;
-import java.util.List;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -97,10 +101,20 @@ public class OrderServiceImpl implements OrderService {
 
         System.out.println("CALL API PRODUK: " + url);
 
+        // Forward JWT if present
+        HttpHeaders headers = new HttpHeaders();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getCredentials() != null) {
+            headers.set("Authorization", "Bearer " + auth.getCredentials().toString());
+        } else {
+            System.out.println("No JWT token found in SecurityContext for propagation");
+        }
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
         // call API
         Product product;
         try {
-            product = restTemplate.getForObject(url, Product.class);
+            product = restTemplate.exchange(url, HttpMethod.GET, entity, Product.class).getBody();
         } catch (Exception e) {
             throw new RuntimeException("Gagal mengambil data product: " + e.getMessage());
         }
